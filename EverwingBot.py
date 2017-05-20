@@ -19,7 +19,7 @@ count=1
 #Loop Repeat
 while True:
     ImageCapture.takeimage()
-    img = ImageCapture.arr
+    img = ImageCapture.pilimg
     ImageFinder.findimage(img)
     print(time.time()-last_time)
     last_time = time.time()
