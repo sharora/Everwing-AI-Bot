@@ -6,7 +6,7 @@ import ImageCapture
 import ImageFinder
 
 #Initial Delay Before Memeing Begins
-##time.sleep(20)
+time.sleep(20)
 
 mouse = Controller()
 mouse.position = (625, 630)
@@ -19,8 +19,8 @@ count=1
 #Loop Repeat
 while True:
     ImageCapture.takeimage()
-    img = ImageCapture.pilimg
-    ImageFinder.findimage(img)
+##    img = ImageCapture.pilimg
+##    ImageFinder.findimage(img)
     print(time.time()-last_time)
     last_time = time.time()
     #Stop after cetain time

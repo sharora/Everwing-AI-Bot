@@ -17,6 +17,7 @@ def findimage(img):
     v = [x[1] for x in l]
     x = np.mean(w)
     y = np.mean(v)
+    cv2.imwrite('boom45.png', boom)
     
 
 

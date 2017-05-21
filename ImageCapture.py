@@ -12,15 +12,14 @@ def takeimage():
     app = QApplication(sys.argv)
     screen = QGuiApplication.primaryScreen()
     desktopPixmap = screen.grabWindow(0,458,170,180,275)
-    img = desktopPixmap.toImage()
-    qimage1 = QtGui.QImage(img)
-    bytes=qimage1.bits().asstring(qimage1.byteCount())
-    pilimg = Image.frombuffer("L",(qimage1.width(),qimage1.height()),bytes,'raw', "L", 0, 1)
-    return pilimg
- 
-
+    qimage1 = desktopPixmap.toImage()
+    bytes =qimage1.bits().asstring(qimage1.byteCount())
+    pilimg = Image.frombuffer("RGBA",(qimage1.width(),qimage1.height()),bytes,'raw', "RGBA", 0, 1)
+    pilimg.show()
     
-pilimg = takeimage()
+                               
+    
+img = takeimage()
     
 
     
