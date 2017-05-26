@@ -7,6 +7,7 @@ import ImageFinder
 import random
 import os
 import neat
+import visualize
 
 
 #Initial Delay Before Memeing Begins
@@ -14,46 +15,58 @@ time.sleep(10)
 
 
 mouse = Controller()
-mouse.press(Button.left)
-mouse.position = (625, 630)
+mouse.position = (625, 600)
+
 
 
 count=1
 goodguys = []
 badguys = []
 stop = []
-firetemp = '/Users/Shreyas/Desktop/GameElements/fireball.png'
-greentemp = '/Users/Shreyas/Desktop/GameElements/green.png'
-redtemp = '/Users/Shreyas/Desktop/GameElements/orange.png'
-okay = '/Users/Shreyas/Desktop/GameElements/okay.png'
-Templates ={firetemp:badguys, greentemp:goodguys, redtemp:goodguys, okay:stop}
+firetemp = cv2.imread('/Users/Shreyas/Desktop/GameElements/fireball.png', 0)
+greentemp = cv2.imread('/Users/Shreyas/Desktop/GameElements/green.png', 0)
+redtemp = cv2.imread('/Users/Shreyas/Desktop/GameElements/orange.png', 0)
+okay = cv2.imread('/Users/Shreyas/Desktop/GameElements/okay.png', 0)
+
+#Loop Repeat
+def everwingbot(genomes, config):
+    for genome_id, genome in genomes:
+        genome.fitness = 120
+        net = neat.nn.FeedForwardNetwork.create(genome, config)
+        mouse.press(Button.left)
+        time.sleep(10)
+        lasttime = time.time()
+        while True:
+            goodguys = []
+            badguys = []
+            stop = []
+            boom = ImageCapture.takeimage()
+            ImageFinder.findimage(boom, redtemp)
+            l = ImageFinder.l
+            if len(l) > 0:
+                obj = l[0::4]
+                badguys.append(int(obj))
+            elif len(l) == 0:
+                badguys.append(int(0,0))
+            ImageFinder.findimage(boom, okay)
+            l = ImageFinder.l
+            if len(l) > 0:
+                obj = l[0::4]
+                stop.append(obj)
+                break
+            output = net.activate(badguys)
+            mouse.move(output,0)
+
+        genome.fitness = lasttime - time.time()
+        mouse.release(Button.left)
+        lasttime = time.time()
+        mouse.position = (720, 640)
+        for i in range(3):
+            mouse.press(Button.left)
+            mouse.release(Button.left)
 
 
-
-###Loop Repeat
-##def everwingbot(genomes, config):
-##    for genome_id, genome in genomes:
-##        genome.fitness = 120
-##        net = neat.nn.FeedForwardNetwork.create(genome, config)
-while True:
-    goodguys = []
-    badguys = []
-    stop = []
-    ImageCapture.takeimage()
-    boom = ImageCapture.boom
-    for i,j in Templates.items():
-        img = cv2.imread(i, 0)
-        ImageFinder.findimage(boom, img)
-        l = ImageFinder.l
-        if len(l) > 0:
-            obj = l[0::4]
-            j.append(obj)
-            print(j)
-        
-    
-        
-
-        
+                
 def run(config_file):
     # Load configuration.
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -70,7 +83,7 @@ def run(config_file):
     p.add_reporter(neat.Checkpointer(5))
 
     # Run for up to 300 generations.
-    winner = p.run(eval_genomes, 300)
+    winner = p.run(everwingbot, 300)
 
     # Display the winning genome.
     print('\nBest genome:\n{!s}'.format(winner))
@@ -78,9 +91,7 @@ def run(config_file):
     # Show output of the most fit genome against training data.
     print('\nOutput:')
     winner_net = neat.nn.FeedForwardNetwork.create(winner, config)
-    for xi, xo in zip(xor_inputs, xor_outputs):
-        output = winner_net.activate(xi)
-        print("input {!r}, expected output {!r}, got {!r}".format(xi, xo, output))
+
 
     node_names = {-1:'A', -2: 'B', 0:'A XOR B'}
     visualize.draw_net(config, winner, True, node_names=node_names)
@@ -88,10 +99,12 @@ def run(config_file):
     visualize.plot_species(stats, view=True)
 
     p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-4')
-    p.run(eval_genomes, 10)
+    p.run(everwingbot, 10)
 
 
-
+local_dir = os.path.dirname(__file__)
+config_path = os.path.join(local_dir, 'config-feedforward')
+run(config_path)
 
 
     
