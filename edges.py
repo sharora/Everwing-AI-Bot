@@ -1,27 +1,26 @@
-import numpy as np
 import cv2
-from matplotlib import pyplot as plt
+import numpy as np
+import ImageCapture
 
-img1 = cv2.imread('/Users/Shreyas/Desktop/orange.png', 0)
-img2 = cv2.imread('/Users/Shreyas/Desktop/dx.png', 0)
+e1 = cv2.getTickCount()
+ImageCapture.takeimage()
+boom = ImageCapture.boom
 
-# Initiate SIFT detector
-orb = cv2.ORB_create()
+hsv = cv2.cvtColor(boom, cv2.COLOR_BGR2HSV)
 
-# find the keypoints and descriptors with SIFT
-kp1, des1 = orb.detectAndCompute(img1,None)
-kp2, des2 = orb.detectAndCompute(img2,None)
+lower_red = np.array([30,150,50])
+upper_red = np.array([255,255,180])
 
-# create BFMatcher object
-bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+mask = cv2.inRange(hsv, lower_red, upper_red)
+res = cv2.bitwise_and(boom,boom, mask= mask)
 
-# Match descriptors. 
-matches = bf.match(des1,des2)
+edges = cv2.Canny(boom,100,200)
+cv2.imwrite('boom81.png', edges)
+e2 = cv2.getTickCount()
+t = (e2 - e1) / cv2.getTickFrequency()
+print(t)
+    
+    
+   
 
-# Sort them in the order of their distance.
-matches = sorted(matches, key = lambda x:x.distance)
 
-# Draw first 10 matches.
-img3 = cv2.drawMatches(img1,kp1,img2,kp2,matches[:10],None, flags=2)
-
-plt.imshow(img3),plt.show()

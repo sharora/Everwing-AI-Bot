@@ -9,7 +9,7 @@ import time
 ##import math, random
 ##from pynput.mouse import Button, Controller
 
-##
+##time.sleep(10)
 ##SENSITIVITY = 70
 ##
 ##mouse = Controller()
@@ -22,6 +22,8 @@ import time
 
 def takeimage():
     global boom
+    lower_red = np.array([30,150,50])
+    upper_red = np.array([255,255,180])
     app = QApplication(sys.argv)
     screen = QGuiApplication.primaryScreen()
     desktopPixmap = screen.grabWindow(0,464,170,180,275)
@@ -30,9 +32,12 @@ def takeimage():
     pilimg = Image.frombuffer("RGBA",(qimage1.width(),qimage1.height()),bytes,'raw', "RGBA", 0, 1)
     img = np.array(pilimg)
     boom = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+##    cv2.imwrite('boombitch1.png', img)
     return boom
+    
 
 boom = takeimage()
+##takeimage()
 
 ##lane = 3
 ##d = 1
@@ -54,6 +59,8 @@ boom = takeimage()
 ##                mouse.move(-SENSITIVITY, 0)
 ##            else:
 ##                mouse.move(d * SENSITIVITY, 0)
+
+
  
 
 

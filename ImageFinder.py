@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-
+import ImageCapture
 
 def findimage(boom, template):
     global l
@@ -11,6 +11,8 @@ def findimage(boom, template):
     loc = np.where( res >= threshold)
     for pt in zip(*loc[::-1]):
         l.append(pt)
+        
+
 
 
 
