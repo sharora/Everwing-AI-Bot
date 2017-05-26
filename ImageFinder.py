@@ -10,7 +10,7 @@ def findimage(boom, template):
     loc = np.where( res >= threshold)
     for pt in zip(*loc[::-1]):
         l.append(pt)
-    return 1
+    return l
 
 
 
