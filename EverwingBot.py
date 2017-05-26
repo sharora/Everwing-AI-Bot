@@ -39,8 +39,7 @@ while True:
     badguys = []
     stop = []
     e1 = cv2.getTickCount()
-    ImageCapture.takeimage()
-    boom = ImageCapture.boom
+    boom = ImageCapture.takeimage()
     for i,j in Templates.items():
         img = cv2.imread(i, 0)
         ImageFinder.findimage(boom, img)
