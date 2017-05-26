@@ -3,7 +3,6 @@ import cv2
 
 
 def findimage(boom, template):
-    global l
     l = []
     w, h = template.shape[::-1]
     res = cv2.matchTemplate(boom,template,cv2.TM_CCOEFF_NORMED)
@@ -11,6 +10,7 @@ def findimage(boom, template):
     loc = np.where( res >= threshold)
     for pt in zip(*loc[::-1]):
         l.append(pt)
+    return 1
 
 
 
