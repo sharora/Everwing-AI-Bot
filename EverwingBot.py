@@ -8,6 +8,7 @@ import random
 import os
 import neat
 import visualize
+import nnreform
 
 
 #Initial Delay Before Memeing Begins
@@ -43,18 +44,16 @@ def everwingbot(genomes, config):
             boom = ImageCapture.takeimage()
             ImageFinder.findimage(boom, redtemp)
             l = ImageFinder.l
-            if len(l) > 0:
-                obj = l[0::4]
-                badguys.append(int(obj))
-            elif len(l) == 0:
-                badguys.append(int(0,0))
+            nnreform.nnreform(l)
+            badguys = nnreform.gameElement
             ImageFinder.findimage(boom, okay)
             l = ImageFinder.l
             if len(l) > 0:
                 obj = l[0::4]
                 stop.append(obj)
                 break
-            output = net.activate(badguys)
+            listout = net.activate(badguys)
+            output = int(listout[0])
             mouse.move(output,0)
 
         genome.fitness = lasttime - time.time()
@@ -64,9 +63,8 @@ def everwingbot(genomes, config):
         for i in range(3):
             mouse.press(Button.left)
             mouse.release(Button.left)
-
-
-                
+        
+    
 def run(config_file):
     # Load configuration.
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
