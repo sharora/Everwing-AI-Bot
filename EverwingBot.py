@@ -3,106 +3,80 @@ import time
 import cv2
 import numpy as np
 import ImageCapture
-import ImageFinder
 import random
 import os
-import neat
-import visualize
-import nnreform
+import torch
+import torch.utils.data as data_utils
+import torch.nn.functional as F
+import torch.nn as nn
+from torch.autograd import Variable
 
-
-#Initial Delay Before Memeing Begins
 time.sleep(10)
-
-
 mouse = Controller()
 mouse.position = (625, 600)
 
+class Net(nn.Module):
+
+    def __init__(self):
+        super(Net, self).__init__()
+        self.conv1 = nn.Conv2d(1, 8, 5)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.bn1 = nn.BatchNorm2d(8)
+        self.conv2 = nn.Conv2d(8, 16, 5)
+        self.conv3 = nn.Conv2d(16, 32, 5)
+        self.bn3 = nn.BatchNorm2d(32)
+        self.conv4 = nn.Conv2d(32, 64, 5)
+        self.fc1 = nn.Linear(64 * 3 * 6, 400)
+        self.fc2 = nn.Linear(400, 84)
+        self.bn4 = nn.BatchNorm1d(84)
+        self.fc3 = nn.Linear(84, 1)
+
+    def forward(self, x):
+        x = self.pool(F.elu(self.bn1(self.conv1(x))))
+        x = self.pool(F.elu(self.conv2(x)))
+        x = self.pool(F.elu(self.bn3(self.conv3(x))))
+        x = self.pool(F.elu(self.conv4(x)))
+        x = x.view(-1, 64 * 3 * 6)
+        x = F.elu(self.fc1(x))
+        x = F.dropout(x, p=0.68, training=self.training)
+        x = F.elu(self.bn4(self.fc2(x)))
+        x = F.dropout(x, p=0.68, training=self.training)
+        x = self.fc3(x)
+        return x
+       
+
+net = Net()
+
+net.load_state_dict(torch.load('ewing.pkl'))
+
+net.eval()
+
+old = 625
+lasttime = time.time()
+t = lasttime
+mouse.press(Button.left)
+for i in range(1000):
+    boom = ImageCapture.takeimage()
+    img = cv2.resize(boom,(165,108))
+    img = torch.from_numpy(img)
+    img = img.unsqueeze(0)
+    img = img.unsqueeze(1)
+    img = img.float()
+    img = Variable(img)
+    output = net(img)
+    output = output.data
+    output = output.mul(350)             
+    output = output.add(465)
+    output = output.numpy()
+    movement = (output - old) * 1
+    movement = movement + output
+    mouse.press(Button.left)
+    mouse.position = (movement, 640)
+    old = movement
+    lasttime = time.time()
 
 
-count=1
-goodguys = []
-badguys = []
-stop = []
-firetemp = cv2.imread('/Users/Shreyas/Desktop/GameElements/fireball.png', 0)
-greentemp = cv2.imread('/Users/Shreyas/Desktop/GameElements/green.png', 0)
-redtemp = cv2.imread('/Users/Shreyas/Desktop/GameElements/orange.png', 0)
-okay = cv2.imread('/Users/Shreyas/Desktop/GameElements/okay.png', 0)
 
-#Loop Repeat
-def everwingbot(genomes, config):
-    for genome_id, genome in genomes:
-        genome.fitness = 120
-        net = neat.nn.FeedForwardNetwork.create(genome, config)
-        mouse.press(Button.left)
-        time.sleep(10)
-        lasttime = time.time()
-        while True:
-            goodguys = []
-            badguys = []
-            stop = []
-            boom = ImageCapture.takeimage()
-            ImageFinder.findimage(boom, redtemp)
-            l = ImageFinder.l
-            nnreform.nnreform(l)
-            badguys = nnreform.gameElement
-            ImageFinder.findimage(boom, okay)
-            l = ImageFinder.l
-            if len(l) > 0:
-                obj = l[0::4]
-                stop.append(obj)
-                break
-            listout = net.activate(badguys)
-            output = int(listout[0])
-            mouse.move(output,0)
-
-        genome.fitness = lasttime - time.time()
-        mouse.release(Button.left)
-        lasttime = time.time()
-        mouse.position = (720, 640)
-        for i in range(3):
-            mouse.press(Button.left)
-            mouse.release(Button.left)
-        
-    
-def run(config_file):
-    # Load configuration.
-    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                         config_file)
-
-    # Create the population, which is the top-level object for a NEAT run.
-    p = neat.Population(config)
-
-    # Add a stdout reporter to show progress in the terminal.
-    p.add_reporter(neat.StdOutReporter(True))
-    stats = neat.StatisticsReporter()
-    p.add_reporter(stats)
-    p.add_reporter(neat.Checkpointer(5))
-
-    # Run for up to 300 generations.
-    winner = p.run(everwingbot, 300)
-
-    # Display the winning genome.
-    print('\nBest genome:\n{!s}'.format(winner))
-
-    # Show output of the most fit genome against training data.
-    print('\nOutput:')
-    winner_net = neat.nn.FeedForwardNetwork.create(winner, config)
-
-
-    node_names = {-1:'A', -2: 'B', 0:'A XOR B'}
-    visualize.draw_net(config, winner, True, node_names=node_names)
-    visualize.plot_stats(stats, ylog=False, view=True)
-    visualize.plot_species(stats, view=True)
-
-    p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-4')
-    p.run(everwingbot, 10)
-
-
-local_dir = os.path.dirname(__file__)
-config_path = os.path.join(local_dir, 'config-feedforward')
-run(config_path)
 
 
     
