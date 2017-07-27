@@ -47,13 +47,12 @@ class Net(nn.Module):
 
 net = Net()
 
-net.load_state_dict(torch.load('ewing.pkl'))
+net.load_state_dict(torch.load('Models/ewingModel1.pkl'))
 
 net.eval()
 
 old = 625
 lasttime = time.time()
-t = lasttime
 mouse.press(Button.left)
 for i in range(1000):
     boom = ImageCapture.takeimage()
@@ -63,15 +62,17 @@ for i in range(1000):
     img = img.unsqueeze(1)
     img = img.float()
     img = Variable(img)
+    lasttime = time.time()
     output = net(img)
+    print(time.time() - lasttime)
     output = output.data
     output = output.mul(350)             
     output = output.add(465)
     output = output.numpy()
     movement = (output - old) * 1
     movement = movement + output
-    mouse.press(Button.left)
-    mouse.position = (movement, 640)
+##    mouse.press(Button.left)
+##    mouse.position = (movement, 640)
     old = movement
     lasttime = time.time()
 
