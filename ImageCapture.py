@@ -21,7 +21,6 @@ def takeimage():
     pilimg = Image.frombuffer("RGBA",(qimage1.width(),qimage1.height()),bytes,'raw', "RGBA", 0, 1)
     img = np.array(pilimg)
     boom = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-##    cv2.imwrite('boombitch1.png', img)
     return boom
     
 
